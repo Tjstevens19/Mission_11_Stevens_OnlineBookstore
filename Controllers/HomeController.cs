@@ -1,32 +1,36 @@
 using Microsoft.AspNetCore.Mvc;
 using Mission_11_Stevens_OnlineBookstore.Models;
-using System.Diagnostics;
+using Mission_11_Stevens_OnlineBookstore.Models.ViewModels;
 
 namespace Mission_11_Stevens_OnlineBookstore.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        private IOnlineBookstoreRepository _repository;
+        public HomeController(IOnlineBookstoreRepository temp)
         {
-            _logger = logger;
+            _repository = temp;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int pageNum)
         {
-            return View();
-        }
+            int pageSize = 10;
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+            var blah = new BookstoreListViewModel
+            {
+                Books = _repository.Books
+                    .OrderBy(x => x.Title)
+                    .Skip((pageNum - 1) * pageSize)
+                    .Take(pageSize),
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                PaginationInfo = new PaginationInfo
+                {
+                    CurrentPage = pageNum,
+                    ItemsPerPage = pageSize,
+                    TotalItems = _repository.Books.Count()
+                }
+            };
+            return View(blah);
         }
     }
 }

@@ -1,9 +1,22 @@
+using Microsoft.EntityFrameworkCore;
+using Mission_11_Stevens_OnlineBookstore.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddDbContext<BookstoreContext>(options =>
+{
+    options.UseSqlite(builder.Configuration["ConnectionStrings:BookstoreConnection"]);
+}
+);
+    
+builder.Services.AddScoped<IOnlineBookstoreRepository, EFOnlineBookstoreRepository>();
+
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -20,8 +33,8 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute("pagination", "Projects/{pageNum}", new { Controller = "Home", action = "Index" });
+
+app.MapDefaultControllerRoute();
 
 app.Run();
